@@ -83,10 +83,7 @@ varColumn <- function(data, labels = NULL) {
                          position = factors_idx)
   }
 
-  data.frame(Variables = base_names,
-             check.names = F,
-             row.names = NULL,
-             stringsAsFactors = F)
+  base_names
 }
 
 
@@ -175,9 +172,8 @@ desctable <- function(data, stats, tests, labels) {
 #' @export
 desctable.default <- function(data, stats = stats_auto, tests, labels = NULL) {
   # Assemble the Variables and the statTable in a single desctable object
-  list(Variables = varColumn(data, labels),
-       stats = statTable(data, stats)) %>%
-  set_desctable_class()
+  cbind(data.frame(Variables = varColumn(data, labels)),
+        statTable(data, stats))
 }
 
 
