@@ -180,32 +180,13 @@ desctable.default <- function(data, stats = stats_auto, tests, labels = NULL) {
 #' @rdname desctable
 #' @export
 desctable.grouped_df <- function(data, stats = stats_auto, tests = tests_auto, labels = NULL) {
-  # Get groups then ungroup dataframe
-  grps <- dplyr::groups(data)
-  data <- dplyr::ungroup(data)
+  grps <- dplyr::group_vars(data)
 
-  # Assemble the Variables (excluding the grouping ones) and the subTables recursively in a single desctable object
-  c(Variables = list(varColumn(data[!names(data) %in% (grps %>% lapply(as.character) %>% unlist())], labels)),
-    subTable(data, stats, tests, grps)) %>%
-    set_desctable_class()
-}
+  nested <- ungroup(tidyr::nest(data))
+  nested$stats <- lapply(nested$data, statTable, stats = stats)
+  nested$vars <- lapply(nested$data, varColumn)
 
-
-#' Create the subtables names
-#'
-#' Create the subtables names, as
-#' factor: level (n=sub-group length)
-#'
-#' @param grp Grouping factor
-#' @param df Dataframe containing the grouping factor
-#' @return A character vector with the names for the subtables
-subNames <- function(grp, df) {
-  paste0(as.character(grp),
-         ": ",
-         eval(grp, df) %>% factor() %>% levels(),
-         " (n=",
-         summary(eval(grp, df) %>% factor() %>% stats::na.omit(), maxsum = Inf),
-         ")")
+  nested
 }
 
 
